@@ -1,0 +1,3 @@
+aiohttp-sse
+git+https://github.com/vphpersson/ecs_tools_py.git#egg=ecs_tools_py
+git+https://github.com/vphpersson/option_parser.git#egg=option_parser
