@@ -76,7 +76,7 @@ def main():
         LOG.addHandler(hdlr=log_handler)
         LOG.setLevel(level=INFO)
 
-        app = Application()
+        app = Application(client_max_size=16384**2)
         app.connections = WeakSet()
 
         app.router.add_route('POST', '/submit', submit)
