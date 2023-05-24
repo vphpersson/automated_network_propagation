@@ -3,8 +3,7 @@
 from logging import getLogger, Logger, INFO, StreamHandler
 from logging.handlers import TimedRotatingFileHandler
 from sys import stderr
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from asyncio import Queue, CancelledError
 from typing import Final
 from contextlib import suppress
@@ -20,16 +19,12 @@ from automated_network_propagation.cli import AutomatedNetworkPropagationOptionP
 LOG: Final[Logger] = getLogger(__name__)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class ConnectionData:
     queue: Queue
     client_ip: str | None
     client_port: int | None
-    subscriptions: set[str] | None
-    created: datetime = field(init=False)
-
-    def __post_init__(self):
-        self.created = datetime.now().astimezone()
+    subscriptions: tuple[str, ...] | None
 
 
 async def feed(request: Request):
@@ -44,14 +39,21 @@ async def feed(request: Request):
         client_port = None
 
     queue = Queue()
+    subscriptions = tuple(set(request.rel_url.query.get('subscriptions', '').split(','))) or None
     request.app.connections.add(
         ConnectionData(
             queue=queue,
             client_ip=client_ip,
             client_port=client_port,
-            subscriptions=set(
-                request.rel_url.query.get('subscriptions', [])
-            ) or None
+            subscriptions=subscriptions
+        )
+    )
+    LOG.info(
+        msg='A client was added to the connections',
+        extra=dict(
+            client_ip=client_ip,
+            client_port=client_port,
+            subscriptions=subscriptions
         )
     )
 
