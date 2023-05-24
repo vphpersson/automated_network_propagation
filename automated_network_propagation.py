@@ -38,21 +38,20 @@ async def feed(request: Request):
         client_ip = None
         client_port = None
 
-    queue = Queue()
 
     if subscription_value  := request.rel_url.query.get('subscriptions'):
         subscriptions = tuple(set(subscription_value.split(',')))
     else:
         subscriptions = None
 
-    request.app.connections.add(
-        ConnectionData(
-            queue=queue,
-            client_ip=client_ip,
-            client_port=client_port,
-            subscriptions=subscriptions
-        )
+    connection_data = ConnectionData(
+        queue=Queue(),
+        client_ip=client_ip,
+        client_port=client_port,
+        subscriptions=subscriptions
     )
+
+    request.app.connections.add(connection_data)
     LOG.info(
         msg='A client was added to the connections',
         extra=dict(
@@ -66,7 +65,7 @@ async def feed(request: Request):
         response: EventSourceResponse
         async with sse_response(request=request) as response:
             data_tuple: tuple[str, str]
-            while data_tuple := await queue.get():
+            while data_tuple := await connection_data.queue.get():
                 event, data = data_tuple
                 await response.send(data=data, event=event)
 
