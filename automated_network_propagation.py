@@ -40,8 +40,8 @@ async def feed(request: Request):
 
     queue = Queue()
 
-    if subscription_components := request.rel_url.query.get('subscriptions', '').split(','):
-        subscriptions = tuple(set(subscription_components))
+    if subscription_value  := request.rel_url.query.get('subscriptions'):
+        subscriptions = tuple(set(subscription_value.split(',')))
     else:
         subscriptions = None
 
