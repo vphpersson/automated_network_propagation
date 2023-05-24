@@ -50,7 +50,7 @@ async def feed(request: Request):
             client_ip=client_ip,
             client_port=client_port,
             subscriptions=set(
-                request.rel_url.query.get('subscriptions')
+                request.rel_url.query.get('subscriptions', [])
             ) or None
         )
     )
