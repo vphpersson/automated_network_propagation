@@ -39,7 +39,12 @@ async def feed(request: Request):
         client_port = None
 
     queue = Queue()
-    subscriptions = tuple(set(request.rel_url.query.get('subscriptions', '').split(','))) or None
+
+    if subscription_components := request.rel_url.query.get('subscriptions', '').split(','):
+        subscriptions = tuple(set(subscription_components))
+    else:
+        subscriptions = None
+
     request.app.connections.add(
         ConnectionData(
             queue=queue,
